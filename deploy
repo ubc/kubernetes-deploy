@@ -11,6 +11,13 @@ export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 source "$DEPLOY_ROOT_DIR/src/common.bash"
 
+if [[ -z "$CI_ENVIRONMENT_URL" ]]; then
+  echo "Reading CI_ENVIRONMENT_URL from .gitlab-ci.yml..."
+  CI_ENVIRONMENT_URL="$(ruby -ryaml -e 'puts YAML.load_file(".gitlab-ci.yml")[ENV["CI_BUILD_NAME"]]["environment"]["url"]')"
+  CI_ENVIRONMENT_URL="$(eval echo "$CI_ENVIRONMENT_URL")"
+  echo "CI_ENVIRONMENT_URL: $CI_ENVIRONMENT_URL"
+fi
+
 ensure_deploy_variables
 create_kubeconfig
 

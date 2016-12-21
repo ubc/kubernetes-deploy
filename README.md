@@ -81,8 +81,6 @@ build:
 
 production:
   stage: production
-  variables:
-    CI_ENVIRONMENT_URL: http://production.$KUBE_DOMAIN
   script:
     - command deploy
   environment:
@@ -94,8 +92,6 @@ production:
 
 staging:
   stage: staging
-  variables:
-    CI_ENVIRONMENT_URL: http://staging.$KUBE_DOMAIN
   script:
     - command deploy
   environment:
@@ -106,8 +102,6 @@ staging:
 
 review:
   stage: review
-  variables:
-    CI_ENVIRONMENT_URL: http://$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
   script:
     - command deploy
   environment:
