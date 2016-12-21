@@ -12,10 +12,10 @@ RUN apk add -U curl tar gzip bash ca-certificates && \
 #  tar zx && mv linux-amd64/helm /usr/bin/ && \
 #  helm version --client
 
-# Install Helm Canary
-RUN curl https://kubernetes-helm.storage.googleapis.com/helm-canary-linux-amd64.tar.gz | \
-  tar zx && mv linux-amd64/helm /usr/bin/ && \
-  helm version --client
+## Install Helm Canary
+#RUN curl https://kubernetes-helm.storage.googleapis.com/helm-canary-linux-amd64.tar.gz | \
+#  tar zx && mv linux-amd64/helm /usr/bin/ && \
+#  helm version --client
 
 # Install kubectl
 RUN curl -L -o /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
@@ -33,7 +33,7 @@ COPY / /opt/kubernetes-deploy/
 RUN ln -s /opt/kubernetes-deploy/run /usr/bin/deploy && \
   which deploy && \
   which build && \
-  which remove
+  which destroy
 
 ENTRYPOINT []
 CMD []
