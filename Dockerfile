@@ -1,4 +1,4 @@
-FROM docker:git
+FROM docker:dind
 
 # Install requirements
 RUN apk add -U curl tar gzip bash ca-certificates && \
@@ -32,4 +32,8 @@ ENV PATH=/opt/kubernetes-deploy:$PATH
 COPY / /opt/kubernetes-deploy/
 RUN ln -s /opt/kubernetes-deploy/run /usr/bin/deploy && \
   which deploy && \
-  which build
+  which build && \
+  which remove
+
+ENTRYPOINT []
+CMD []

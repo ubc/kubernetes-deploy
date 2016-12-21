@@ -12,12 +12,11 @@ export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 source "$DEPLOY_ROOT_DIR/src/common.bash"
 
 create_kubeconfig
-is_openshift
 
-if [[ -z "$OPENSHIFT" ]]; then
+if ! is_openshift; then
   echo "Currently only OpenShift is supported!"
   exit 1
 fi
 
 echo "Removing all pods..."
-oc delete all -f "app=$CI_ENVIRONMENT_SLUG"
+oc delete all -l "app=$CI_ENVIRONMENT_SLUG"

@@ -2,41 +2,83 @@
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+	DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+	SOURCE="$(readlink "$SOURCE")"
+	[[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 
 export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 source "$DEPLOY_ROOT_DIR/src/common.bash"
 
+echo "Checking docker engine..."
+
+if ! docker info &>/dev/null; then
+	echo "Missing docker engine to build images."
+	echo "Running docker:dind locally with graph driver pointing to '/cache/docker'"
+
+	if ! grep -q overlay /proc/filesystems; then
+		echo "Missing overlay filesystem. Are you running recent enough kernel?"
+		exit 1
+	fi
+
+	dockerd \
+		--host=unix:///var/run/docker.sock \
+		--storage-driver=overlay \
+		--graph=/cache/docker &> /docker.log &
+
+	echo "Waiting for docker..."
+	for i in $(seq 1 60); do
+		if docker info &> /dev/null; then
+			break
+		fi
+		sleep 1s
+	done
+
+	if [[ "$i" == 60 ]]; then
+		echo "Failed to start docker:dind..."
+		cat /docker.log
+		exit 1
+	fi
+	echo ""
+fi
+
 docker rm -f "$CI_CONTAINER_NAME" &>/dev/null || true
 
-echo Building application...
+echo "Building application..."
 
 if [[ -f Dockerfile ]]; then
-  # Build Dockerfile
-  docker build -t "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG" .
+	echo "Building Dockerfile-based application..."
+	# Build Dockerfile
+	docker build -t "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG" .
 else
-  # Build heroku-based application
-  docker run -i --name="$CI_CONTAINER_NAME" \
-    -v "$(pwd):/tmp/app:ro" \
-    gliderlabs/herokuish /bin/herokuish buildpack build
-  docker commit "$CI_CONTAINER_NAME" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
-  docker rm "$CI_CONTAINER_NAME"
+	# Build heroku-based application
+	echo "Building Heroku-based application using gliderlabs/herokuish docker image..."
+	docker run -i --name="$CI_CONTAINER_NAME" \
+		-v "$(pwd):/tmp/app:ro" \
+		-v "/cache/herokuish:/tmp/cache" \
+		gliderlabs/herokuish /bin/herokuish buildpack build
+	docker commit "$CI_CONTAINER_NAME" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
+	docker rm "$CI_CONTAINER_NAME" >/dev/null
+	echo ""
 
-  # Create a start command, start `web`
-  docker create --expose 5000 --env PORT=5000 \
-    --name="$CI_CONTAINER_NAME" \
-    "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG" \
-    /bin/herokuish procfile start web
-  docker commit "$CI_CONTAINER_NAME" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
-  docker rm "$CI_CONTAINER_NAME"
+	# Create a start command, start `web`
+	echo "Configuring $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG docker image..."
+	docker create --expose 5000 --env PORT=5000 \
+		--name="$CI_CONTAINER_NAME" \
+		"$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG" \
+		/bin/herokuish procfile start web
+	docker commit "$CI_CONTAINER_NAME" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
+	docker rm "$CI_CONTAINER_NAME" >/dev/null
+	echo ""
 fi
 
 if [[ -n "$CI_BUILD_TOKEN" ]]; then
-  docker login -u gitlab-ci-token -p "$CI_BUILD_TOKEN" "$CI_REGISTRY"
+	echo "Logging to GitLab Container Registry with CI credentials..."
+	docker login -u gitlab-ci-token -p "$CI_BUILD_TOKEN" "$CI_REGISTRY"
+	echo ""
 fi
 
+echo "Pushing to GitLab Container Registry..."
 docker push "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
+echo ""

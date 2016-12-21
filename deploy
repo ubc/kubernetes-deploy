@@ -13,16 +13,15 @@ source "$DEPLOY_ROOT_DIR/src/common.bash"
 
 ensure_deploy_variables
 create_kubeconfig
-is_openshift
-
-if [[ -z "$OPENSHIFT" ]]; then
-  echo "Currently only OpenShift is supported!"
-  exit 1
-fi
 
 if ! oc project "$KUBE_NAMESPACE" &> /dev/null; then
   echo "Creating namespace: $KUBE_NAMESPACE..."
-  oc project "$KUBE_NAMESPACE"
+  oc new-project "$KUBE_NAMESPACE"
+fi
+
+if ! is_openshift; then
+  echo "Currently only OpenShift is supported!"
+  exit 1
 fi
 
 #if oc get deployment "${CI_ENVIRONMENT_SLUG}" &>/dev/null; then
