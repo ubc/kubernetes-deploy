@@ -14,7 +14,6 @@ source "$DEPLOY_ROOT_DIR/src/common.bash"
 ensure_deploy_variables
 create_kubeconfig
 is_openshift
-ensure_environment_url
 
 if [[ -z "$OPENSHIFT" ]]; then
   echo "Currently only OpenShift is supported!"
@@ -41,9 +40,12 @@ echo "Waiting for deployment..."
 echo ""
 
 echo "Checking routes..."
-if ! oc get routes "${CI_ENVIRONMENT_SLUG}" > /dev/null; then
+if ! oc get routes "${CI_ENVIRONMENT_SLUG}" &> /dev/null; then
   echo "Creating routes..."
-  oc expose dc "${CI_ENVIRONMENT_SLUG}" --hostname="${CI_ENVIRONMENT_URL}"
+  CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_URL}"
+  CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/http:\/\//}"
+  CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/https:\/\//}"
+  oc expose service "${CI_ENVIRONMENT_SLUG}" --hostname="${CI_ENVIRONMENT_HOSTNAME}"
 fi
 echo "Application is accessible at: ${CI_ENVIRONMENT_URL}"
 echo ""

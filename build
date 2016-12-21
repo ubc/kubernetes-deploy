@@ -20,14 +20,15 @@ if [[ -f Dockerfile ]]; then
   docker build -t "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG" .
 else
   # Build heroku-based application
-  docker run -e 5000 -i --name="$CI_CONTAINER_NAME" \
+  docker run -i --name="$CI_CONTAINER_NAME" \
     -v "$(pwd):/tmp/app:ro" \
     gliderlabs/herokuish /bin/herokuish buildpack build
   docker commit "$CI_CONTAINER_NAME" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
   docker rm "$CI_CONTAINER_NAME"
 
   # Create a start command, start `web`
-  docker create --name="$CI_CONTAINER_NAME" \
+  docker create --expose 5000 --env PORT=5000 \
+    --name="$CI_CONTAINER_NAME" \
     "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG" \
     /bin/herokuish procfile start web
   docker commit "$CI_CONTAINER_NAME" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
