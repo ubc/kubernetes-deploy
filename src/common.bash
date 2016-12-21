@@ -1,0 +1,62 @@
+set -eo pipefail
+
+[[ "$TRACE" ]] && set -x
+
+export CI_CONTAINER_NAME="ci_job_build_$CI_BUILD_ID"
+export CI_REGISTRY_TAG="$CI_BUILD_REF_NAME"
+
+create_kubeconfig() {
+  echo "Generating kubeconfig..."
+  export KUBECONFIG="$(pwd)/kubeconfig"
+  kubectl config set-cluster gitlab-deploy --server="$KUBE_URL"
+  kubectl config set-credentials gitlab-deploy --token="$KUBE_TOKEN"
+  kubectl config set-context gitlab-deploy \
+    --cluster=gitlab-deploy --user=gitlab-deploy \
+    --namespace="$KUBE_NAMESPACE"
+  kubectl config use-context gitlab-deploy
+  echo ""
+}
+
+ensure_deploy_variables() {
+  if [[ -z "$KUBE_URL" ]]; then
+    echo "Missing KUBE_URL."
+    exit 1
+  fi
+
+  if [[ -z "$KUBE_TOKEN" ]]; then
+    echo "Missing KUBE_TOKEN."
+    exit 1
+  fi
+
+  if [[ -z "$KUBE_NAMESPACE" ]]; then
+    echo "Missing KUBE_NAMESPACE."
+    exit 1
+  fi
+
+  if [[ -z "$CI_ENVIRONMENT_SLUG" ]]; then
+    echo "Missing CI_ENVIRONMENT_SLUG."
+    exit 1
+  fi
+
+  if [[ -z "$CI_ENVIRONMENT_URL" ]]; then
+    echo "Missing CI_ENVIRONMENT_URL."
+    exit 1
+  fi
+}
+
+ping_kube() {
+  if kubectl version > /dev/null; then
+    echo "Kubernetes is online!"
+    echo ""
+  else
+    echo "Cannot connect to Kubernetes."
+    return 1
+  fi
+}
+
+is_openshift() {
+  if oc status &>/dev/null; then
+    echo "Running on OpenShift."
+    export OPENSHIFT=1
+  fi
+}

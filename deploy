@@ -1,0 +1,49 @@
+#!/bin/bash
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+
+export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+source "$DEPLOY_ROOT_DIR/src/common.bash"
+
+ensure_deploy_variables
+create_kubeconfig
+is_openshift
+ensure_environment_url
+
+if [[ -z "$OPENSHIFT" ]]; then
+  echo "Currently only OpenShift is supported!"
+  exit 1
+fi
+
+if ! oc project "$KUBE_NAMESPACE" &> /dev/null; then
+  echo "Creating namespace: $KUBE_NAMESPACE..."
+  oc project "$KUBE_NAMESPACE"
+fi
+
+#if oc get deployment "${CI_ENVIRONMENT_SLUG}" &>/dev/null; then
+  echo "Deleting old application..."
+  oc delete all -l "app=${CI_ENVIRONMENT_SLUG}" || true
+  echo ""
+#fi
+
+echo "Creating application..."
+oc new-app "--name=${CI_ENVIRONMENT_SLUG}" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
+echo ""
+
+echo "Waiting for deployment..."
+# kubectl rollout status "deployment/${CI_ENVIRONMENT_SLUG}"
+echo ""
+
+echo "Checking routes..."
+if ! oc get routes "${CI_ENVIRONMENT_SLUG}" > /dev/null; then
+  echo "Creating routes..."
+  oc expose dc "${CI_ENVIRONMENT_SLUG}" --hostname="${CI_ENVIRONMENT_URL}"
+fi
+echo "Application is accessible at: ${CI_ENVIRONMENT_URL}"
+echo ""

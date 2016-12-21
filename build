@@ -1,0 +1,41 @@
+#!/bin/bash
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+
+export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+source "$DEPLOY_ROOT_DIR/src/common.bash"
+
+docker rm -f "$CI_CONTAINER_NAME" &>/dev/null || true
+
+echo Building application...
+
+if [[ -f Dockerfile ]]; then
+  # Build Dockerfile
+  docker build -t "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG" .
+else
+  # Build heroku-based application
+  docker run -e 5000 -i --name="$CI_CONTAINER_NAME" \
+    -v "$(pwd):/tmp/app:ro" \
+    gliderlabs/herokuish /bin/herokuish buildpack build
+  docker commit "$CI_CONTAINER_NAME" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
+  docker rm "$CI_CONTAINER_NAME"
+
+  # Create a start command, start `web`
+  docker create --name="$CI_CONTAINER_NAME" \
+    "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG" \
+    /bin/herokuish procfile start web
+  docker commit "$CI_CONTAINER_NAME" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
+  docker rm "$CI_CONTAINER_NAME"
+fi
+
+if [[ -n "$CI_BUILD_TOKEN" ]]; then
+  docker login -u gitlab-ci-token -p "$CI_BUILD_TOKEN" "$CI_REGISTRY"
+fi
+
+docker push "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
