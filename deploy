@@ -42,7 +42,18 @@ oc new-app "--name=${CI_ENVIRONMENT_SLUG}" "$CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG"
 echo ""
 
 echo "Waiting for deployment..."
-# kubectl rollout status "deployment/${CI_ENVIRONMENT_SLUG}"
+while true; do
+  if ! read LINE; then
+    echo "Timedout waiting for deployment."
+    oc get "dc/${CI_ENVIRONMENT_SLUG}"
+    exit 1
+  fi
+
+  echo "$LINE"
+	if [[ "$LINE" == "Waiting for latest deployment config spec to be observed by the controller loop..." ]]; then
+		break
+	fi
+done < <(timeout -t 180 oc rollout status "dc/${CI_ENVIRONMENT_SLUG}")
 echo ""
 
 echo "Checking routes..."
