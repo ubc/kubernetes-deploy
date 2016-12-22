@@ -56,77 +56,7 @@ You can then start using your own docker image hosted on your Container Registry
 ### How to use it?
 
 Basically, configure Kubernetes Service in your project settings and
-copy-paste this `.gitlab-ci.yml`:
-
-```
-image: registry.gitlab.com/gitlab-examples/openshift-deploy
-
-variables:
-  # Application deployment domain
-  KUBE_DOMAIN: domain.com
-
-stages:
-  - build
-  - test
-  - review
-  - staging
-  - production
-
-build:
-  stage: build
-  script:
-    - command build
-  only:
-    - branches
-
-production:
-  stage: production
-  script:
-    - command deploy
-  environment:
-    name: production
-    url: http://production.$KUBE_DOMAIN
-  when: manual
-  only:
-    - master
-
-staging:
-  stage: staging
-  script:
-    - command deploy
-  environment:
-    name: staging
-    url: http://staging.$KUBE_DOMAIN
-  only:
-    - master
-
-review:
-  stage: review
-  script:
-    - command deploy
-  environment:
-    name: review/$CI_BUILD_REF_NAME
-    url: http://$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
-    on_stop: stop_review
-  only:
-    - branches
-  except:
-    - master
-
-stop_review:
-  stage: review
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - command remove
-  environment:
-    name: review/$CI_BUILD_REF_NAME
-    action: stop
-  only:
-    - branches
-  except:
-    - master
-```
+copy-paste [this `.gitlab-ci.yml`](https://gitlab.com/gitlab-org/gitlab-ci-yml/blob/master/autodeploy/OpenShift.gitlab-ci.yml).
 
 ### License
 
