@@ -8,7 +8,7 @@ RUN apk add -U curl tar gzip bash ca-certificates && \
   rm glibc-2.23-r3.apk
 
 # Ruby is required for reading CI_ENVIRONMENT_URL from .gitlab-ci.yml
-RUN apk add ruby
+RUN apk add ruby git
 
 # Install Helm
 #RUN curl https://kubernetes-helm.storage.googleapis.com/helm-v2.0.2-linux-amd64.tar.gz | \
