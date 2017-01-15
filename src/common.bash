@@ -53,12 +53,3 @@ ping_kube() {
     return 1
   fi
 }
-
-is_openshift() {
-  if oc status &>/dev/null; then
-    echo "Running on OpenShift."
-    return 0
-  else
-    return 1
-  fi
-}

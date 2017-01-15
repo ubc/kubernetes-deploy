@@ -13,10 +13,5 @@ source "$DEPLOY_ROOT_DIR/src/common.bash"
 
 create_kubeconfig
 
-if ! is_openshift; then
-  echo "Currently only OpenShift is supported!"
-  exit 1
-fi
-
 echo "Removing all pods..."
-oc delete all -l "app=$CI_ENVIRONMENT_SLUG"
+kubectl delete all -l "app=$CI_ENVIRONMENT_SLUG" -n "$KUBE_NAMESPACE"
