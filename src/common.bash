@@ -8,8 +8,15 @@ export CI_REGISTRY_TAG="$CI_BUILD_REF_NAME"
 create_kubeconfig() {
   echo "Generating kubeconfig..."
   export KUBECONFIG="$(pwd)/kubeconfig"
-  kubectl config set-cluster gitlab-deploy --server="$KUBE_URL"
-  kubectl config set-credentials gitlab-deploy --token="$KUBE_TOKEN"
+  export KUBE_CLUSTER_OPTIONS=
+  if [[ -n "$KUBE_CA_PEM" ]]; then
+    cat "$KUBE_CA_PEM" > "$(pwd)/kube.ca.pem"
+    export KUBE_CLUSTER_OPTIONS=--certificate-authority=KUBE_CA_PEM
+  fi
+  kubectl config set-cluster gitlab-deploy --server="$KUBE_URL" \
+    $KUBE_CLUSTER_OPTIONS
+  kubectl config set-credentials gitlab-deploy --token="$KUBE_TOKEN" \
+    $KUBE_CLUSTER_OPTIONS
   kubectl config set-context gitlab-deploy \
     --cluster=gitlab-deploy --user=gitlab-deploy \
     --namespace="$KUBE_NAMESPACE"
