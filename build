@@ -30,7 +30,9 @@ if ! docker info &>/dev/null; then
 	dockerd \
 		--host=unix:///var/run/docker.sock \
 		--storage-driver=overlay \
-		--graph=/cache/docker &
+		--graph=/cache/docker & &>/docker.log
+
+  trap 'kill %%' EXIT
 
 	echo "Waiting for docker..."
 	for i in $(seq 1 60); do
