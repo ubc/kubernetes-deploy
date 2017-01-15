@@ -10,8 +10,9 @@ create_kubeconfig() {
   export KUBECONFIG="$(pwd)/kubeconfig"
   export KUBE_CLUSTER_OPTIONS=
   if [[ -n "$KUBE_CA_PEM" ]]; then
-    cat "$KUBE_CA_PEM" > "$(pwd)/kube.ca.pem"
-    export KUBE_CLUSTER_OPTIONS=--certificate-authority=KUBE_CA_PEM
+    echo "Using KUBE_CA_PEM..."
+    echo "$KUBE_CA_PEM" > "$(pwd)/kube.ca.pem"
+    export KUBE_CLUSTER_OPTIONS=--certificate-authority="$(pwd)/kube.ca.pem"
   fi
   kubectl config set-cluster gitlab-deploy --server="$KUBE_URL" \
     $KUBE_CLUSTER_OPTIONS

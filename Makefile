@@ -1,4 +1,4 @@
-REPO := registry.gitlab.com/gitlab-examples/openshift-deploy:latest
+REPO := registry.gitlab.com/ayufan/kubernetes-deploy-demo:latest
 
 build:
 		docker build -t $(REPO) .

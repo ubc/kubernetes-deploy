@@ -30,7 +30,9 @@ kind: Namespace
 apiVersion: v1
 metadata:
   name: $KUBE_NAMESPACE
----
+EOF
+
+cat <<EOF | kubectl apply -n $KUBE_NAMESPACE -f -
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
