@@ -46,6 +46,7 @@ spec:
     metadata:
       labels:
         name: $CI_ENVIRONMENT_SLUG
+        app: $CI_ENVIRONMENT_SLUG
     spec:
       containers:
       - name: app
