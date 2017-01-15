@@ -95,5 +95,8 @@ spec:
           servicePort: 5000
 EOF
 
+echo "Waiting for deployment..."
+kubectl rollout status -w "deployment/$CI_ENVIRONMENT_SLUG"
+
 echo "Application is accessible at: ${CI_ENVIRONMENT_URL}"
 echo ""
