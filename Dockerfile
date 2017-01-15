@@ -25,11 +25,6 @@ RUN curl -L -o /usr/bin/kubectl https://storage.googleapis.com/kubernetes-releas
   chmod +x /usr/bin/kubectl && \
   kubectl version --client
 
-# Install OpenShift OC
-RUN curl -L https://github.com/openshift/origin/releases/download/v1.3.2/openshift-origin-client-tools-v1.3.2-ac1d579-linux-64bit.tar.gz | \
-  tar zx && mv openshift-origin-client-tools-v1.3.2-ac1d579-linux-64bit/oc /usr/bin/ && \
-  oc version
-
 # Install deploy scripts
 ENV PATH=/opt/kubernetes-deploy:$PATH
 COPY / /opt/kubernetes-deploy/
