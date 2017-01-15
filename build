@@ -17,15 +17,15 @@ if ! docker info &>/dev/null; then
 	echo "Missing docker engine to build images."
 	echo "Running docker:dind locally with graph driver pointing to '/cache/docker'"
 
-	if ! grep -q overlay /proc/filesystems; then
-		echo "Missing overlay filesystem. Are you running recent enough kernel?"
-		exit 1
-	fi
+	#if ! grep -q overlay /proc/filesystems; then
+	#	echo "Missing overlay filesystem. Are you running recent enough kernel?"
+	#	exit 1
+	#fi
 
 	dockerd \
 		--host=unix:///var/run/docker.sock \
-		--storage-driver=overlay \
-		--graph=/cache/docker &> /docker.log &
+		--storage-driver=aufs \
+		--graph=/cache/docker &
 
 	echo "Waiting for docker..."
 	for i in $(seq 1 60); do
