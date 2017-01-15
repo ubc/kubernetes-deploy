@@ -96,8 +96,7 @@ spec:
 EOF
 
 echo "Waiting for deployment..."
-sleep 3s
-kubectl rollout status -w "deployment/$CI_ENVIRONMENT_SLUG"
+kubectl rollout status -n "$KUBE_NAMESPACE" -w "deployment/$CI_ENVIRONMENT_SLUG"
 
 echo "Application is accessible at: ${CI_ENVIRONMENT_URL}"
 echo ""
