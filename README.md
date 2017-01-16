@@ -1,11 +1,11 @@
-## OpenShift auto-deployments (EXPERIMENTAL)
+## Kubernetes auto-deployments (EXPERIMENTAL)
 
 This is repository that builds Docker Image with all scripts needed to
-deploy to OpenShift from GitLab CI.
+deploy to Kubernetes from GitLab CI.
 
 It basically consist of two stages:
 1. Build stage where a Docker Image is built,
-2. Deploy stage where a previously built Docker Image is run on OpenShift and
+2. Deploy stage where a previously built Docker Image is run on Kubernetes and
    exposed on hostname.
 
 ### Build stage
@@ -29,17 +29,16 @@ The deploy script does:
 ### Requirements
 
 1. GitLab Runner using Docker or Kubernetes executor with privileged mode enabled,
-2. Service account for existing OpenShift cluster,
+2. Service account for existing Kubernetes cluster,
 3. DNS wildcard domain to host deployed applications.
 
 ### Limitations
 
 1. Only public docker images can be deployed,
-2. There is no upgrades for OpenShift existing deployments,
-3. There is no ability to pass environment variables to deployed application,
-4. Currently we do not have a way to watch for deployment status and make sure
+2. There is no ability to pass environment variables to deployed application,
+3. Currently we do not have a way to watch for deployment status and make sure
    that deployment did succeed,
-5. Currently we do not have a way to expose `mysql`, `postgres` or other database
+4. Currently we do not have a way to expose `mysql`, `postgres` or other database
    services.
 
 ### Examples
@@ -56,7 +55,7 @@ You can then start using your own docker image hosted on your Container Registry
 ### How to use it?
 
 Basically, configure Kubernetes Service in your project settings and
-copy-paste [this `.gitlab-ci.yml`](https://gitlab.com/gitlab-org/gitlab-ci-yml/blob/master/autodeploy/OpenShift.gitlab-ci.yml).
+copy-paste [this `.gitlab-ci.yml`](https://gitlab.com/gitlab-org/gitlab-ci-yml/blob/master/autodeploy/Kubernetes.gitlab-ci.yml).
 
 ### License
 
