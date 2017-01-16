@@ -54,6 +54,11 @@ spec:
       - name: app
         image: $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG
         imagePullPolicy: Always
+        env:
+        - name: CI_PIPELINE_ID
+          value: "$CI_PIPELINE_ID"
+        - name: CI_BUILD_ID
+          value: "$CI_BUILD_ID"
         ports:
         - name: web
           containerPort: 5000
