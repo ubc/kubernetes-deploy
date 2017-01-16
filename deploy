@@ -32,7 +32,7 @@ metadata:
   name: $KUBE_NAMESPACE
 EOF
 
-cat <<EOF | kubectl replace -n $KUBE_NAMESPACE -f -
+cat <<EOF | kubectl apply -n $KUBE_NAMESPACE -f -
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -49,8 +49,6 @@ spec:
       labels:
         name: $CI_ENVIRONMENT_SLUG
         app: $CI_ENVIRONMENT_SLUG
-        pipeline_id: "$CI_PIPELINE_ID"
-        build_id: "$CI_BUILD_ID"
     spec:
       containers:
       - name: app
@@ -71,9 +69,7 @@ spec:
             port: 5000
           initialDelaySeconds: 5
           timeoutSeconds: 3
-EOF
-
-cat <<EOF | kubectl apply -n $KUBE_NAMESPACE -f -
+---
 apiVersion: v1
 kind: Service
 metadata:
