@@ -21,10 +21,9 @@ The build script does:
 ### Deploy stage
 
 The deploy script does:
-1. Create a new project if does not exist already,
-2. Delete old application,
-3. Create a new application with most recent Docker Image,
-4. Expose route with given hostname for this application.
+1. Create a new namespace if does not exist already,
+2. Deploy an application with most recent Docker Image,
+3. Create or update ingress to expose the application under hostname.
 
 ### Requirements
 
