@@ -1,5 +1,7 @@
 #!/bin/bash
 
+: ${CI_REGISTRY_USERNAME:=gitlab-ci-token}
+
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
 	DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
@@ -82,7 +84,7 @@ fi
 
 if [[ -n "$CI_BUILD_TOKEN" ]]; then
 	echo "Logging to GitLab Container Registry with CI credentials..."
-	docker login -u gitlab-ci-token -p "$CI_BUILD_TOKEN" "$CI_REGISTRY"
+	docker login -u "$CI_REGISTRY_USERNAME" -p "$CI_BUILD_TOKEN" "$CI_REGISTRY"
 	echo ""
 fi
 
