@@ -126,7 +126,7 @@ else
   then
       AUTH_STRING="?private_token=$PRIVATE_TOKEN"
   fi
-  curl -s ${DEPLOYMENT_MANIFEST}${AUTH_STRING} | envsubst | kubectl apply -n $KUBE_NAMESPACE -f -
+  curl -s ${DEPLOYMENT_MANIFEST}${AUTH_STRING} | CI_ENVIRONMENT_HOSTNAME=$CI_ENVIRONMENT_HOSTNAME envsubst | kubectl apply -n $KUBE_NAMESPACE -f -
 fi
 
 echo "Waiting for deployment..."
