@@ -32,7 +32,8 @@ metadata:
   name: $KUBE_NAMESPACE
 EOF
 
-cat <<EOF | kubectl apply -n $KUBE_NAMESPACE -f -
+if [[ -z "$DEPLOYMENT_MANIFEST" ]]; then
+  cat <<EOF | kubectl apply -n $KUBE_NAMESPACE -f -
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -118,6 +119,15 @@ spec:
           serviceName: $CI_ENVIRONMENT_SLUG
           servicePort: 5000
 EOF
+else
+  # we have a deploy manifest to use. we substitute env vars first and then pass it to kubectl
+  AUTH_STRING=""
+  if [ -n "$PRIVATE_TOKEN" ];
+  then
+      AUTH_STRING="?private_token=$PRIVATE_TOKEN"
+  fi
+  curl -s ${DEPLOYMENT_MANIFEST}${AUTH_STRING} | CI_ENVIRONMENT_HOSTNAME=$CI_ENVIRONMENT_HOSTNAME envsubst | kubectl apply -n $KUBE_NAMESPACE -f -
+fi
 
 echo "Waiting for deployment..."
 kubectl rollout status -n "$KUBE_NAMESPACE" -w "deployment/$CI_ENVIRONMENT_SLUG"
