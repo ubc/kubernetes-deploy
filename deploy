@@ -130,7 +130,7 @@ else
 fi
 
 echo "Waiting for deployment..."
-kubectl rollout status -n "$KUBE_NAMESPACE" -w "deployment/$CI_ENVIRONMENT_SLUG"
+kubectl rollout status -n "$KUBE_NAMESPACE" -w "deployment/${CI_PROJECT_NAME}-${CI_ENVIRONMENT_SLUG}"
 
 echo "Application is accessible at: ${CI_ENVIRONMENT_URL}"
 echo ""
