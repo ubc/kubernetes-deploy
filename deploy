@@ -22,8 +22,8 @@ ensure_deploy_variables
 create_kubeconfig
 
 CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_URL}"
-CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/http:\/\//}"
 CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/https:\/\//}"
+CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/http:\/\//}"
 
 cat <<EOF | kubectl apply -f -
 kind: Namespace

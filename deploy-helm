@@ -1,0 +1,73 @@
+#!/bin/bash
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+
+export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+source "$DEPLOY_ROOT_DIR/src/common.bash"
+
+if [[ -z "$CI_ENVIRONMENT_URL" ]]; then
+  echo "Reading CI_ENVIRONMENT_URL from .gitlab-ci.yml..."
+  CI_ENVIRONMENT_URL="$(ruby -ryaml -e 'puts YAML.load_file(".gitlab-ci.yml")[ENV["CI_BUILD_NAME"]]["environment"]["url"]')"
+  CI_ENVIRONMENT_URL="$(eval echo "$CI_ENVIRONMENT_URL")"
+  echo "CI_ENVIRONMENT_URL: $CI_ENVIRONMENT_URL"
+fi
+
+ensure_deploy_variables
+create_kubeconfig
+
+CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_URL}"
+CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/https:\/\//}"
+export CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/http:\/\//}"
+
+cat <<EOF | kubectl apply -f -
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: $KUBE_NAMESPACE
+EOF
+
+if [[ "$DEPLOYMENT_MANIFEST" ]]; then
+  # update helm repo first to get latest changes
+  helm repo update
+
+  VALUE_OPTION=""
+  if [[ "$DEPLOYMENT_VALUE_FILE" ]]; then
+    VALUE_OPTION="-f $DEPLOYMENT_VALUE_FILE"
+  fi
+
+  DEBUG=""
+  if [[ "$CI_DEBUG_TRACE" != "false" && ! -z "$CI_DEBUG_TRACE" ]]; then
+    DEBUG="--debug"
+  fi
+
+  # we need to pass all environment variables to helm. Before that,
+  # we convert __ back to . as dot is not allowed for environment variable names.
+  # we also need to quote the variables that has = in the value.
+  # And in the end, join them with comma as specified in helm --set parameter
+  ENV_VARS=$(echo "" | awk 'BEGIN {ORS=","}; {for (i in ENVIRON) {c=i; gsub("__", ".", c); if (index(ENVIRON[i], "=")) { v = "'\''"ENVIRON[i]"'\''" } else { v = ENVIRON[i] }; print c "=" v }}')
+
+  if helm status $CI_ENVIRONMENT_SLUG > /dev/null 2>&1; then
+      OPS="upgrade"
+      RELEASE_NAME=$CI_ENVIRONMENT_SLUG
+      echo "Upgrading existing deployment..."
+  else
+      OPS="install"
+      RELEASE_NAME="--name $CI_ENVIRONMENT_SLUG"
+      echo "Installing new deployment..."
+  fi
+
+  # remove --wait for now and tiller tends to disconnect when installing
+  helm $OPS --namespace $KUBE_NAMESPACE $VALUE_OPTION --set "$ENV_VARS" $DEBUG $RELEASE_NAME $DEPLOYMENT_MANIFEST
+else
+  echo 'Please specify $DEPLOYMENT_MANIFEST for deployment.'
+  exit 1
+fi
+
+echo "Application is accessible at: ${CI_ENVIRONMENT_URL}"
+echo ""
