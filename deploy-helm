@@ -52,18 +52,8 @@ if [[ "$DEPLOYMENT_MANIFEST" ]]; then
   # And in the end, join them with comma as specified in helm --set parameter
   ENV_VARS=$(echo "" | awk 'BEGIN {ORS=","}; {for (i in ENVIRON) {c=i; gsub("__", ".", c); if (index(ENVIRON[i], "=")) { v = "'\''"ENVIRON[i]"'\''" } else { v = ENVIRON[i] }; print c "=" v }}')
 
-  if helm status $CI_ENVIRONMENT_SLUG > /dev/null 2>&1; then
-      OPS="upgrade"
-      RELEASE_NAME=$CI_ENVIRONMENT_SLUG
-      echo "Upgrading existing deployment..."
-  else
-      OPS="install"
-      RELEASE_NAME="--name $CI_ENVIRONMENT_SLUG"
-      echo "Installing new deployment..."
-  fi
-
   # remove --wait for now and tiller tends to disconnect when installing
-  helm $OPS --namespace $KUBE_NAMESPACE $VALUE_OPTION --set "$ENV_VARS" $DEBUG $RELEASE_NAME $DEPLOYMENT_MANIFEST
+  helm upgrade --install --recreate-pods --namespace $KUBE_NAMESPACE $VALUE_OPTION --set "$ENV_VARS" $DEBUG $CI_ENVIRONMENT_SLUG $DEPLOYMENT_MANIFEST
 else
   echo 'Please specify $DEPLOYMENT_MANIFEST for deployment.'
   exit 1
