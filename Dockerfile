@@ -1,6 +1,6 @@
 FROM docker:dind
 
-ENV HELM_VERSION 2.2.0
+ENV HELM_VERSION 2.4.1
 
 # Install requirements
 RUN apk add -U curl tar gzip bash ca-certificates gettext && \
