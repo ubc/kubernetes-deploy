@@ -13,5 +13,5 @@ source "$DEPLOY_ROOT_DIR/src/common.bash"
 
 create_kubeconfig
 
-echo "Removing $CI_ENVIRONMENT_SLUG deployment..."
-helm delete $CI_ENVIRONMENT_SLUG
+echo "Removing $CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG deployment..."
+helm delete $CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG

@@ -53,7 +53,7 @@ if [[ "$DEPLOYMENT_MANIFEST" ]]; then
   ENV_VARS=$(echo "" | awk 'BEGIN {ORS=","}; {for (i in ENVIRON) {c=i; gsub("__", ".", c); if (index(ENVIRON[i], "=")) { v = "'\''"ENVIRON[i]"'\''" } else { v = ENVIRON[i] }; print c "=" v }}')
 
   # remove --wait for now and tiller tends to disconnect when installing
-  helm upgrade --install --recreate-pods --namespace $KUBE_NAMESPACE $VALUE_OPTION --set "$ENV_VARS" $DEBUG $CI_ENVIRONMENT_SLUG $DEPLOYMENT_MANIFEST
+  helm upgrade --install --recreate-pods --namespace $KUBE_NAMESPACE $VALUE_OPTION --set "$ENV_VARS" $DEBUG $CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG $DEPLOYMENT_MANIFEST
 else
   echo 'Please specify $DEPLOYMENT_MANIFEST for deployment.'
   exit 1
