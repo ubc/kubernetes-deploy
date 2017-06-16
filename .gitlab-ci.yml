@@ -14,7 +14,6 @@ development:
     - docker push "$CI_REGISTRY_IMAGE:latest"
   only:
     - master
-    - branches
 
 stable:
   stage: deploy
