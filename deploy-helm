@@ -38,7 +38,17 @@ if [[ "$DEPLOYMENT_MANIFEST" ]]; then
 
   VALUE_OPTION=""
   if [[ "$DEPLOYMENT_VALUE_FILE" ]]; then
-    VALUE_OPTION="-f $DEPLOYMENT_VALUE_FILE"
+    # if it is a remote file, grab the file first
+    if [[ "$DEPLOYMENT_VALUE_LOCATION" ]]; then
+      URL_PARAM=""
+      if [[ "$GITLAB_TOKEN" ]]; then
+        URL_PARAM="?private_token=$GITLAB_TOKEN"
+      fi
+      curl -o value_file.yaml ${DEPLOYMENT_VALUE_LOCATION}/${DEPLOYMENT_VALUE_FILE}${URL_PARAM}
+      VALUE_OPTION="-f value_file.yaml"
+    else
+      VALUE_OPTION="-f $DEPLOYMENT_VALUE_FILE"
+    fi
   fi
 
   DEBUG=""
