@@ -3,7 +3,7 @@ FROM docker:dind
 ENV HELM_VERSION 2.4.1
 
 # Install requirements
-RUN apk add --no-cache -U curl tar gzip bash ca-certificates gettext openssl && \
+RUN apk add --no-cache -U curl tar gzip bash ca-certificates gettext openssl openssh && \
   wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub && \
   wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.23-r3/glibc-2.23-r3.apk && \
   apk add glibc-2.23-r3.apk && \
@@ -37,5 +37,5 @@ RUN ln -s /opt/kubernetes-deploy/run /usr/bin/deploy && \
   which build && \
   which destroy
 
-ENTRYPOINT []
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD []
