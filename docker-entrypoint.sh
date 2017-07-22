@@ -9,4 +9,6 @@ if [[ $DEPLOYMENT_KEY ]]; then
     chmod 400 ~/.ssh/config
 fi
 
+source /opt/kubernetes-deploy/src/github.bash
+
 exec "$@"
