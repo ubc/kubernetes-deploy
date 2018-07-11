@@ -67,6 +67,10 @@ if [[ "$DEPLOYMENT_MANIFEST" ]]; then
   # And in the end, join them with comma as specified in helm --set parameter
   ENV_VARS=$(echo "" | awk 'BEGIN {ORS=","}; {for (i in ENVIRON) {c=i; gsub("__", ".", c); if (index(ENVIRON[i], "=")) { v = "'\''"ENVIRON[i]"'\''" } else { v = ENVIRON[i] }; print c "=" v }}')
 
+  if [[ "$DEBUG" ]]; then
+    echo $ENV_VARS
+  fi
+
   # remove --wait for now and tiller tends to disconnect when installing
   helm upgrade --install --recreate-pods --reset-values $CHART_VERION --namespace $KUBE_NAMESPACE $VALUE_OPTION --set "$ENV_VARS" $DEBUG $CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG $DEPLOYMENT_MANIFEST
 else
