@@ -65,7 +65,7 @@ if [[ "$DEPLOYMENT_MANIFEST" ]]; then
   # we convert __ back to . as dot is not allowed for environment variable names.
   # we also need to quote the variables that has = in the value.
   # And in the end, join them with comma as specified in helm --set parameter
-  ENV_VARS=$(echo "" | awk 'BEGIN {ORS=","}; {split("CI_BUILD_TOKEN CI_REGISTRY_PASSWORD CI_REGISTRY_USER DEPLOYMENT_KEY PRIVATE_TOKEN", va); for (i in va) excluded[va[i]];  for (i in ENVIRON) { if (i in excluded) { continue;  }; c=i; gsub("__", ".", c); if (index(ENVIRON[i], "=")) { v = "'\''"ENVIRON[i]"'\''"  } else { v = ENVIRON[i]  };  print c "=" v  }}')
+  ENV_VARS=$(echo "" | awk 'BEGIN {ORS=","}; {split("CI_BUILD_TOKEN CI_REGISTRY_PASSWORD CI_REGISTRY_USER DEPLOYMENT_KEY PRIVATE_TOKEN CI_COMMIT_MESSAGE CI_COMMIT_DESCRIPTION", va); for (i in va) excluded[va[i]];  for (i in ENVIRON) { if (i in excluded) { continue;  }; c=i; gsub("__", ".", c); if (index(ENVIRON[i], "=")) { v = "'\''"ENVIRON[i]"'\''"  } else { v = ENVIRON[i]  };  print c "=" v  }}')
 
   if [[ "$DEBUG" ]]; then
     echo $ENV_VARS
