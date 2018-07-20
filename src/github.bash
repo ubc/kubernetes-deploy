@@ -8,7 +8,7 @@ fi
 
 ensure_github() {
   if [[ ! -f ~/.netrc ]]; then
-    echo "ok.sh authentication ~/.netrc doesn't exists."
+    echo "ok.sh authentication ~/.netrc doesn't exists. Is your GITHUB_TOKEN set in the environment variable?"
     return 1
   fi
 
