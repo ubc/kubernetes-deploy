@@ -1,6 +1,6 @@
 FROM docker:dind
 
-ENV HELM_VERSION 2.8.1
+ENV HELM_VERSION 2.16.12
 ENV PATH=/opt/kubernetes-deploy:$PATH
 
 # Install requirements
