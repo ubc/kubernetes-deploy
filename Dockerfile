@@ -1,15 +1,16 @@
 FROM docker:dind
 
 ENV HELM_VERSION 2.17.0
+#ENV GLIBC_VERSION 2.34-r0
 ENV PATH=/opt/kubernetes-deploy:$PATH
 
 # Install requirements
 # Ruby is required for reading CI_ENVIRONMENT_URL from .gitlab-ci.yml
 RUN apk add --no-cache -U curl tar gzip bash ca-certificates gettext openssl openssh coreutils ruby git && \
-  wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-  wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.23-r3/glibc-2.23-r3.apk && \
-  apk add glibc-2.23-r3.apk && \
-  rm glibc-2.23-r3.apk && \
+#  wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
+#  wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk && \
+#  apk add glibc-${GLIBC_VERSION}.apk && \
+#  rm glibc-${GLIBC_VERSION}.apk && \
 
   # Install Helm
   curl https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz | \
