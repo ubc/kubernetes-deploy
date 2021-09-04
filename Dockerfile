@@ -1,6 +1,6 @@
 FROM docker:dind
 
-ENV HELM_VERSION 2.16.12
+ENV HELM_VERSION 2.17.0
 ENV PATH=/opt/kubernetes-deploy:$PATH
 
 # Install requirements
@@ -12,7 +12,7 @@ RUN apk add --no-cache -U curl tar gzip bash ca-certificates gettext openssl ope
   rm glibc-2.23-r3.apk && \
 
   # Install Helm
-  curl https://kubernetes-helm.storage.googleapis.com/helm-v${HELM_VERSION}-linux-amd64.tar.gz | \
+  curl https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz | \
   tar zx && mv linux-amd64/helm /usr/bin/ && \
   helm init -c && \
   helm version --client && \
